@@ -8,14 +8,17 @@ class Miscelaneo(commands.Cog):
         self.configuration = './comandos/config.json'
 
         self.msg_configerror = """> _**Info**_
-        Este comando necesita que configures el canal y el mensaje de la forma:
-        ```c.config {canal} {mensaje}```
-        No te preocupes, no necesitas darme el ID del canal, solo _#mencionalo_"""
+        Este comando necesita que configures el canal y el mensaje de la forma:```
+        c.config {canal} {mensaje}```
+        No te preocupes, no necesitas darme el ID del canal, solo _#mencionalo_
+        Y si quieres pinguear a la persona, escribe `{user}` en la parte del mensaje
+        donde quieres mencionarlo"""
 
         self.msg_info = """> _**Info**_
         Fui hecha como en ~~15 minutos xd~~ 5 horas. No te alarmes, no sé hacer pastel
         `PyVersion` **{} {}**
         `Servidores` {}
+        `Invitacion` <https://discordapp.com/api/oauth2/authorize?client_id=669722029196443679&permissions=378944&scope=bot>
         Usa `c.help` si quieres ver los comandos""".format(__version__, version_info.releaselevel, len(self.bot.guilds))
         pass
 
