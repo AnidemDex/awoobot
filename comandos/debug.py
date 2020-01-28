@@ -13,9 +13,11 @@ class Desarrollo(commands.Cog):
     @commands.group()
     @commands.is_owner()
     async def reload(self, ctx):
-        log.debug(f"<<<Intento de refrescar {command}>>>")
-        self.bot.reload_extension(command)
-        await ctx.send(self.message_pass)
+        if ctx.invoked_subcommand is None:
+            command = ctx.args[0]
+            log.debug(f"<<<Intento de refrescar {command}>>>")
+            self.bot.reload_extension(command)
+            await ctx.send(self.message_pass)
     
     @reload.command()
     @commands.is_owner()

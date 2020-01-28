@@ -19,7 +19,9 @@ class Miscelaneo(commands.Cog):
         `PyVersion` **{} {}**
         `Servidores` {}
         `Invitacion` <https://discordapp.com/api/oauth2/authorize?client_id=669722029196443679&permissions=378944&scope=bot>
-        Usa `c.help` si quieres ver los comandos""".format(__version__, version_info.releaselevel, len(self.bot.guilds))
+        Usa `c.help` si quieres ver los comandos
+        `Ping` {}""".format(__version__, version_info.releaselevel, len(self.bot.guilds), self.ping_time)
+
         pass
 
     @commands.command()
@@ -29,6 +31,7 @@ class Miscelaneo(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
+        await ctx.send(f"{self.ping_time}ms")
         pass
 
     @commands.command()
@@ -43,6 +46,10 @@ class Miscelaneo(commands.Cog):
     async def config_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(self.msg_configerror)
+
+    @property
+    def ping_time(self):
+        return round(self.bot.latency*1000)
 
 
 def setup(bot):

@@ -110,6 +110,7 @@ class Cumpleaños(commands.Cog):
                 await ctx.send(f"Tu cumples el " + f"{user_id['day']}/{user_id['month']}/{user_id['year']}")
             else:
                 string = "\n ```ini\n°·.¸.·°¯°·.¸.·°¯°·.¸.->   🎀  𝐹𝑒𝒸𝒽𝒶𝓈  🎀   >-.¸.·°¯°·.¸.·°¯°·.¸.·°\n"
+                pages = commands.Paginator()
                 for users in data:
                     user_id = data[users]
                     user_name = user_id['name']
@@ -118,7 +119,7 @@ class Cumpleaños(commands.Cog):
                     string = string + f"\n{text}"
                 string = string + "``` Para mas informacion, usa `c.help birthday` y si quieres añadir tu cumpleaños usa `c.birthday add [tu fecha de cumpleaños]`"
                 await ctx.send(string)
-                pass
+
     
     @birthday.command()
     @is_configurated()

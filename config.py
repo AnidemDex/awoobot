@@ -16,7 +16,7 @@ def set_loggers():
     log_file_handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='w')
     log_console_handler = logging.StreamHandler()
     log_file_formatter = logging.Formatter('[%(asctime)s] [%(name)s] %(levelname)s: %(message)s', datefmt=datefmt)
-    log_console_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', datefmt=datefmt)
+    log_console_formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', datefmt=datefmt)
     log_file_handler.setFormatter(log_file_formatter)
     log_console_handler.setFormatter(log_console_formatter)
 
