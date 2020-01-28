@@ -28,6 +28,10 @@ class Miscelaneo(commands.Cog):
         pass
 
     @commands.command()
+    async def ping(self, ctx):
+        pass
+
+    @commands.command()
     @commands.has_permissions(manage_guild=True)
     async def config(self, ctx, channel, *, message):
         config = {ctx.guild.id: {'birthday_channel': channel, 'birthday_message': message}}

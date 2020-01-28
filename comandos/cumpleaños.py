@@ -2,6 +2,9 @@ from discord.ext import commands, tasks
 
 import json
 import time
+import logging
+
+log = logging.getLogger(__name__)
 
 def read_json(file):
     with open(file, 'r') as json_file:
