@@ -84,6 +84,9 @@ class Cumpleaños(commands.Cog):
                             with open(self.database, 'w') as outfile:
                                 json.dump(old_data, outfile)
     
+    def cog_unload(self):
+        self.verify_day.cancel()
+        
     @verify_day.before_loop
     async def before_verify_day(self):
         await self.bot.wait_until_ready()
@@ -108,9 +111,9 @@ class Cumpleaños(commands.Cog):
                     user_id = data[users]
                     user_name = user_id['name']
                     user_bday = f"{user_id['day']}/{user_id['month']}/{user_id['year']}"
-                    text = f"[{user_name}]\n\t {user_bday}"
+                    text = f"[{user_name}]: {user_bday}"
                     string = string + f"\n{text}"
-                string = string + "``` Para mas informacion, usa `c.help birthday`"
+                string = string + "``` Para mas informacion, usa `c.help birthday` y si quieres añadir tu cumpleaños usa `c.birthday add [tu fecha de cumpleaños]`"
                 await ctx.send(string)
                 pass
     

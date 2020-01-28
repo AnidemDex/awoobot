@@ -1,17 +1,22 @@
-import os
-from discord.ext import commands
-from dotenv import load_dotenv
+#!/usr/bin/env python3
 
-# No olvides crear un archivo .env en la raiz de la carpeta con estos atributos
-load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
-prefix = os.getenv('BOT_PREFIX')
+import os
+import logging
+from discord.ext import commands
+from config import configuration
+
+log = logging.getLogger(__name__)
+log_handler = logging.FileHandler('info.log')
+log_handler.setLevel(logging.DEBUG)
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(log_formatter)
+log.addHandler(log_handler)
+
+config = configuration()
+token = config.discord_token
+prefix = config.prefix
 
 bot = commands.Bot(command_prefix=prefix)
-
-bot.load_extension('comandos.misc')
-bot.load_extension('comandos.debug')
-bot.load_extension('comandos.cumpleaños')
 
 help_command = commands.DefaultHelpCommand()
 
@@ -19,7 +24,10 @@ help_command = commands.DefaultHelpCommand()
 bot.help_command = help_command
 @bot.event
 async def on_ready():
-    print("Poderes de dulce activados.")
+    bot.load_extension('comandos.misc')
+    bot.load_extension('comandos.debug')
+    bot.load_extension('comandos.cumpleaños')
+    log.info("Poderes dulces activados")
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -29,6 +37,6 @@ async def on_command_error(ctx, error):
         """
         await ctx.send(string)
     else:
-        print(error)
+        log.exception("Ocurrio un problema")
 
 bot.run(token)
