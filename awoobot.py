@@ -27,7 +27,7 @@ async def on_ready():
     log.info(f"[Servidores] {len(bot.guilds)}")
     log.info(f"[Descripción] {bot.description}")
 
-
+@bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.NotOwner):
         string = """> **Exclusivo para el creador**
