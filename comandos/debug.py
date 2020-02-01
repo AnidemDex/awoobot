@@ -31,5 +31,34 @@ class Desarrollo(commands.Cog):
     async def test(self, ctx):
         await ctx.send("Prueba exitosa")
     
+    @commands.group()
+    @commands.is_owner()
+    async def database(self, ctx):
+        if ctx.invoked_subcommand is None:
+            pass
+
+    # FIXME Encontrar como enviar todos estos mensajes en un embebido
+    @database.command()
+    @commands.is_owner()
+    async def readall(self, ctx):
+        reply = self.bot.database.select_all_from('birthdays')
+        for data in reply:
+            await ctx.send(data)
+    
+    @database.command()
+    @commands.is_owner()
+    async def send(self, ctx, *, sql: str):
+        reply = self.bot.database.send(sql)
+        await ctx.send(reply)
+    
+    @database.command()
+    @commands.is_owner()
+    async def getuserdata_len(self, ctx, user_id: str):
+        reply = self.bot.database.get_user_data(ctx.author.id)
+        await ctx.send(ctx.author.id)
+        await ctx.send(user_id)
+        await ctx.send(reply)
+        await ctx.send(len(reply))
+    
 def setup(bot):
     bot.add_cog(Desarrollo(bot))

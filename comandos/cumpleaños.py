@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 import json
 import time
 import logging
+import datetime
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class Cumpleaños(commands.Cog):
         Asi, si naciste el 10 de enero del 2000 deberias enviar: ```
         c.birthday 10 01 2000
         ```
-"""
+        """
     @tasks.loop(hours=12)
     async def verify_day(self):
         print("Verificando cumpleañeros...")
@@ -123,21 +124,18 @@ class Cumpleaños(commands.Cog):
     
     @birthday.command()
     @is_configurated()
-    async def add(self, ctx, day: str, month: str, year: str):
-        id = ctx.author.id
-        name = ctx.author.name
-        date = f"{day} {month} {year}"
-        old_data = read_json(self.database)
+    async def add(self, ctx, day: int, month: int, year: int):
+        user_id = ctx.author.id
+        user_name = ctx.author.name
+        user_guild_id = ctx.guild.id
+        user_date = f"{day} {month} {year}"
+        db_user_data = self.bot.database.get_user_data(user_id)
         
-        if str(id) in old_data:
+        if len(db_user_data) != 0:
             await ctx.send(self.msg_duplicated)
 
-        elif await self.is_valid_date(date):
-            self.data.update(old_data)
-            self.data[str(id)]= {}
-            self.data[str(id)].update({'name':name, 'guild':ctx.guild.id, 'day':day, 'month':month, 'year': year, 'celebrated':False})
-            with open(self.database, 'w') as outfile:
-                json.dump(self.data, outfile)
+        elif await self.is_valid_date(user_date):
+            self.bot.database.insert_birthday(user_id, user_name, user_guild_id, f"{day}-{month}-{year}")
             await ctx.send(self.msg_sucess)
 
         else:

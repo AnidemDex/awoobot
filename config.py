@@ -65,6 +65,19 @@ class DataBase():
             log.exception("Hubo un problema al conectarse a la base de datos")
             log.error(error)
             exit()
+    
+    def select_all_from(self, table):
+        try:
+            SQL = f"""SELECT * FROM {table}"""
+            result = None
+            with self.__connection:
+                with self.__connection.cursor() as cursor:
+                    cursor.execute(SQL)
+                    result = cursor.fetchall()
+            return result
+
+        except Exception:
+            log.exception("Hubo un problema leyendo los datos de la tabla")
 
     def insert_birthday(self, user_id, name, guild_id, birthday_date, is_celebrated=False):
         try:
@@ -82,6 +95,25 @@ class DataBase():
         if self.__connection is not None:
             self.__connection.close()
             log.info("Conexion con la base de datos finalizada")
+    
+    def send(self, str):
+        try:
+            SQL = f"""{str}"""
+            result = None
+            with self.__connection:
+                with self.__connection.cursor() as cursor:
+                    cursor.execute(SQL)
+                    result = cursor.fetchall()
+            return result
+
+        except Exception:
+            log.exception("Hubo un problema enviando el mensaje")
+    
+    def get_user_data(self, user_id):
+        query = f"""SELECT * FROM birthdays WHERE user_id='{user_id}' """
+        reply = self.send(query)
+        return reply
+
 
 
 class Configuration():

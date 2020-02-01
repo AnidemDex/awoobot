@@ -18,7 +18,6 @@ class Miscelaneo(commands.Cog):
         Fui hecha como en ~~15 minutos xd~~ 5 horas. No te alarmes, no sé hacer pastel
         `PyVersion` **{} {}**
         `Servidores` {}
-        `Invitacion` <https://discordapp.com/api/oauth2/authorize?client_id=669722029196443679&permissions=378944&scope=bot>
         Usa `c.help` si quieres ver los comandos
         `Ping` {}""".format(__version__, version_info.releaselevel, len(self.bot.guilds), self.ping_time)
 

@@ -7,6 +7,8 @@ from config import Configuration
 from config import set_loggers
 from config import DataBase
 
+# `Invitacion` <https://discordapp.com/api/oauth2/authorize?client_id=669722029196443679&permissions=378944&scope=bot>
+
 log = logging.getLogger(__name__)
 set_loggers()
 
@@ -36,7 +38,7 @@ async def on_ready():
     log.info(f"[Servidores] {len(bot.guilds)}")
     log.info(f"[Descripción] {bot.description}")
 
-@bot.event
+#@bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.NotOwner):
         string = """> **Exclusivo para el creador**
