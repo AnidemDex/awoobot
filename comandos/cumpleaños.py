@@ -104,11 +104,11 @@ class Cumpleaños(commands.Cog):
     @commands.group(aliases=['bd'])
     async def birthday(self, ctx):
         if ctx.invoked_subcommand is None:
-            data = read_json(self.database)
             if ctx.guild is None:
-                user_id = data[str(ctx.author.id)]
-                
-                await ctx.send(f"Tu cumples el " + f"{user_id['day']}/{user_id['month']}/{user_id['year']}")
+                user_id = ctx.author.id
+                user_data = self.bot.database.get_user_data(user_id, 'birthday_date')
+                user_birthday = user_data[0][0].strftime("%d del mes %m")
+                await ctx.send(f"Tu cumple es el {user_birthday}")
             else:
                 string = "\n ```ini\n°·.¸.·°¯°·.¸.·°¯°·.¸.->   🎀  𝐹𝑒𝒸𝒽𝒶𝓈  🎀   >-.¸.·°¯°·.¸.·°¯°·.¸.·°\n"
                 pages = commands.Paginator()

@@ -109,8 +109,8 @@ class DataBase():
         except Exception:
             log.exception("Hubo un problema enviando el mensaje")
     
-    def get_user_data(self, user_id):
-        query = f"""SELECT * FROM birthdays WHERE user_id='{user_id}' """
+    def get_user_data(self, user_id, data='*'):
+        query = f"""SELECT {data} FROM birthdays WHERE user_id='{user_id}' """
         reply = self.send(query)
         return reply
 
