@@ -8,6 +8,7 @@ __pycache__/
 
 #some other stuff
 *.json
+tools.py
 
 # Distribution / packaging
 .Python

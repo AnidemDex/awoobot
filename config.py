@@ -1,8 +1,12 @@
 import os
 import logging
 import json
+import psycopg2
 from discord.ext import commands
 
+log = logging.getLogger('awoobot')
+
+# FIXME
 class CustomHelpCommand(commands.DefaultHelpCommand):
     def __init__(self):
         pass
@@ -33,9 +37,54 @@ def set_loggers():
     commands_owner_log.setLevel(logging.DEBUG)
     commands_owner_log.addHandler(log_file_handler)
 
-    
+class DataBase():
+    """
+    Database connection class
+    """
 
-class configuration():
+    def __init__(self, params):
+        self.__connection = None
+        self.__parameters = params
+
+        log.info("Objeto para el manejo de la base de datos creado")
+    
+    def connect(self):
+        try:
+            log.info("Conectandose a la base de datos...")
+
+            self.__connection = psycopg2.connect(**self.__parameters)
+            cursor = self.__connection.cursor()
+            
+            cursor.execute('SELECT version();')
+            version = cursor.fetchone()
+
+            log.debug(f"{version}")
+            cursor.close()
+
+        except Exception as error:
+            log.exception("Hubo un problema al conectarse a la base de datos")
+            log.error(error)
+            exit()
+
+    def insert_birthday(self, user_id, name, guild_id, birthday_date, is_celebrated=False):
+        try:
+            SQL = """INSERT INTO birthdays (user_id, name, guild_id, birthday_date, is_celebrated)
+                    VALUES (%s, %s, %s, %s, %s);"""
+            with self.__connection:
+                with self.__connection.cursor() as cursor:
+                    cursor.execute(SQL, (user_id, name, guild_id, birthday_date, is_celebrated))
+
+        except Exception as error:
+            log.exception("Hubo un problema insertando datos a la tabla")
+            log.error(error)
+
+    def disconnect(self):
+        if self.__connection is not None:
+            self.__connection.close()
+            log.info("Conexion con la base de datos finalizada")
+
+
+class Configuration():
     def __init__(self, configuration_file='config.json'):
         if os.path.isfile(configuration_file):
             self.configuration_file = configuration_file
@@ -53,6 +102,22 @@ class configuration():
     def prefix(self):
         return self.configuration_data['PREFIX']
 
+    @property
+    def database_host_name(self):
+        return self.configuration_data['HOST']
+    
+    @property
+    def database_user_name(self):
+        return self.configuration_data['USER']
+    
+    @property
+    def database_password(self):
+        return self.configuration_data['PSWD']
+    
+    @property
+    def database_name(self):
+        return self.configuration_data['DB']
+
     def read_configuration(self):
         with open(self.configuration_file, 'r') as json_file:
             return json.load(json_file)
@@ -60,5 +125,5 @@ class configuration():
 
     def __create_empty_configuration_file(self, path):
         config_file = open(path, 'w')
-        config_file.write('{\"DISCORD_TOKEN\": \"\", \"PREFIX\": [], \"servers\": {}}')
+        config_file.write('{\"DISCORD_TOKEN\": \"\", \"PREFIX\": [], \"host\": \"\", \"user\": \"\", \"password\": \"\", \"database\": \"\"}')
         config_file.close()

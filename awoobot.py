@@ -3,17 +3,26 @@ import os
 import logging
 import discord
 from discord.ext import commands
-from config import configuration
+from config import Configuration
 from config import set_loggers
+from config import DataBase
 
 log = logging.getLogger(__name__)
 set_loggers()
 
-config = configuration()
+config = Configuration()
 token = config.discord_token
 prefix = config.prefix
 
+database_parameters = {"host":config.database_host_name,
+                        "database":config.database_name,
+                        "user":config.database_user_name,
+                        "password":config.database_password}
+
 bot = commands.Bot(command_prefix=prefix)
+
+bot.database = DataBase(database_parameters)
+bot.database.connect()
 
 help_command = commands.DefaultHelpCommand()
 
