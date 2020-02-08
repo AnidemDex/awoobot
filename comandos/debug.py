@@ -31,6 +31,12 @@ class Desarrollo(commands.Cog):
     async def test(self, ctx):
         await ctx.send("Prueba exitosa")
     
+    @commands.command()
+    @commands.is_owner()
+    async def page(self, ctx, *, text: str):
+        pass
+        
+    
     @commands.group()
     @commands.is_owner()
     async def database(self, ctx):
@@ -54,11 +60,17 @@ class Desarrollo(commands.Cog):
     @database.command()
     @commands.is_owner()
     async def getuserdata_len(self, ctx, user_id: str):
-        reply = self.bot.database.get_user_data(ctx.author.id)
-        await ctx.send(ctx.author.id)
-        await ctx.send(user_id)
+        reply = self.bot.database.get_user_data(user_id)
         await ctx.send(reply)
         await ctx.send(len(reply))
+    
+    @database.command()
+    @commands.is_owner()
+    async def getservers_configuration(self, ctx):
+        reply = self.bot.database.get_birthday_config()
+        await ctx.send(reply)
+        await ctx.send(len(reply))
+
     
 def setup(bot):
     bot.add_cog(Desarrollo(bot))

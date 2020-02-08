@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import version_info, __version__
+from discord import version_info, __version__, TextChannel
 import json
 
 class Miscelaneo(commands.Cog):
@@ -35,10 +35,8 @@ class Miscelaneo(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_guild=True)
-    async def config(self, ctx, channel, *, message):
-        config = {ctx.guild.id: {'birthday_channel': channel, 'birthday_message': message}}
-        with open(self.configuration, 'w') as outfile:
-            json.dump(config, outfile)
+    async def config(self, ctx, channel: TextChannel, *, message):
+        self.bot.database.insert_birthday_config(ctx.guild.id, str(channel.id), message)
         await ctx.send(f"El canal a usar es {channel}")
     
     @config.error

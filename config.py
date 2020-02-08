@@ -4,7 +4,7 @@ import json
 import psycopg2
 from discord.ext import commands
 
-log = logging.getLogger('awoobot')
+log = logging.getLogger(__name__)
 
 # FIXME
 class CustomHelpCommand(commands.DefaultHelpCommand):
@@ -29,13 +29,15 @@ def set_loggers():
     discord_log.addHandler(handler)
 
     bot_log = logging.getLogger('awoobot')
-    bot_log.setLevel(logging.INFO)
+    bot_log.setLevel(logging.DEBUG)
     bot_log.addHandler(log_file_handler)
     bot_log.addHandler(log_console_handler)
 
     commands_owner_log = logging.getLogger('debug')
     commands_owner_log.setLevel(logging.DEBUG)
     commands_owner_log.addHandler(log_file_handler)
+
+    log.addHandler(log_console_handler)
 
 class DataBase():
     """
@@ -78,6 +80,11 @@ class DataBase():
 
         except Exception:
             log.exception("Hubo un problema leyendo los datos de la tabla")
+    
+    def select_two_from(self, first_data, second_data, table):
+        query = f"SELECT {first_data}, {second_data} FROM {table}"
+        reply = self.send(query)
+        return reply
 
     def insert_birthday(self, user_id, name, guild_id, birthday_date, is_celebrated=False):
         try:
@@ -90,15 +97,31 @@ class DataBase():
         except Exception as error:
             log.exception("Hubo un problema insertando datos a la tabla")
             log.error(error)
+    
+    def insert_birthday_config(self, guild_id, birthday_channel, birthday_message):
+        try:
+            SQL = """INSERT INTO server_configuration (guild_id, birthday_channel, birthday_message)
+                    VALUES (%s, %s, %s)"""
+            
+            with self.__connection:
+                with self.__connection.cursor() as cursor:
+                    cursor.execute(SQL, (guild_id, birthday_channel, birthday_message))
+        except Exception:
+            log.exception("Hubo un error insertando datos en la configuracion")
+
+    def get_birthday_config(self):
+        query = f"""SELECT guild_id, birthday_channel, birthday_message FROM server_configuration"""
+        reply = self.send(query)
+        return reply
 
     def disconnect(self):
         if self.__connection is not None:
             self.__connection.close()
             log.info("Conexion con la base de datos finalizada")
     
-    def send(self, str):
+    def send(self, string):
         try:
-            SQL = f"""{str}"""
+            SQL = f"""{string} LIMIT 100"""
             result = None
             with self.__connection:
                 with self.__connection.cursor() as cursor:
@@ -113,6 +136,21 @@ class DataBase():
         query = f"""SELECT {data} FROM birthdays WHERE user_id='{user_id}' """
         reply = self.send(query)
         return reply
+    
+    def get_birthday_where(self, month, day):
+        query = f"SELECT user_id, is_celebrated, guild_id FROM birthdays WHERE EXTRACT(MONTH FROM birthday_date) = {month} AND EXTRACT(DAY FROM birthday_date) = {day}"
+        reply = self.send(query)
+        return reply
+    
+    def update_celebrated_state(self, user_id, state=True):
+        SQL = "UPDATE birthdays SET is_celebrated = %s WHERE user_id = %s"
+        try:
+            with self.__connection:
+                with self.__connection.cursor() as cursor:
+                    cursor.execute(SQL, (state, user_id))
+        except Exception:
+            log.exception("Fallo al actualizar datos de la tabla")
+
 
 
 

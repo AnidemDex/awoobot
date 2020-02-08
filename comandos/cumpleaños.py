@@ -4,8 +4,9 @@ import json
 import time
 import logging
 import datetime
+import discord
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('awoobot')
 
 def read_json(file):
     with open(file, 'r') as json_file:
@@ -49,44 +50,44 @@ class Cumpleaños(commands.Cog):
     @tasks.loop(hours=12)
     async def verify_day(self):
         print("Verificando cumpleañeros...")
-        actual_time = time.localtime()
-        actual_day = actual_time.tm_mday
-        actual_month = actual_time.tm_mon
+        today = datetime.date.today()
+        actual_time = datetime.datetime.now().time()
+        limit_time = datetime.time(18, 0, 0, 0)
+        actual_month = today.month
+        actual_day = today.day
 
-        if actual_time.tm_hour < 18:
+        if actual_time < limit_time:
+            users = self.bot.database.get_birthday_where(actual_month, actual_day)
+            if len(users) != 0:
+                for user in users:
+                    user_id = user[0]
+                    user_celebrated = user[1]
+                    user_guild = user[2]
 
-            old_data = read_json(self.database)
-            
-            for user_id in old_data:
-                user = old_data[user_id]
-                user_month = int(user['month'])
-                user_day = int(user['day'])
-                user_celebrated = bool(user['celebrated'])
-                if user_month == actual_month and user_day == actual_day:
-                    
-                    if not user_celebrated:
-                        config_json = read_json('./comandos/config.json')
-                        user_guild = str(user['guild'])
-                        if user_guild in config_json:
-                            guild = config_json[user_guild]
-                            channel = guild['birthday_channel']
-                            channel = channel.replace('#', '')
-                            channel = channel.replace('<', '')
-                            channel = channel.replace('>', '')
-                            channel = int(channel)
-                            channel = self.bot.get_channel(channel)
+                    servers_configuration = self.bot.database.get_birthday_config()
 
-                            message = guild['birthday_message']
-                            id = int(user_id)
-                            client = self.bot.get_user(id)
-                            message = message.replace("{user}", client.mention)
+                    for server in servers_configuration:
+                        guild_id = server[0]
+                        guild_channel = server[1]
+                        guild_message = server[2]
 
-                            await channel.send(message)
-                            
-                            old_data[user_id].update(user)
-                            user.update({'celebrated':True})
-                            with open(self.database, 'w') as outfile:
-                                json.dump(old_data, outfile)
+                        if user_guild == guild_id:
+                            channel = self.bot.get_channel(int(guild_channel))
+
+                            if not user_celebrated:
+                                client = self.bot.get_user(int(user_id))
+
+                                if "{user}" in guild_message:
+                                    guild_message = guild_message.replace("{user}", client.mention)
+                                
+                                await channel.send(guild_message)
+
+                                self.bot.database.update_celebrated_state(user_id)
+
+                                guild = self.bot.get_guild(int(guild_id))
+                                role = discord.utils.get(guild.roles, name='Cumpleañere')
+                                member = guild.get_member(int(user_id))
+                                await member.add_roles(role, reason="Está de cumple UwU")
     
     def cog_unload(self):
         self.verify_day.cancel()
@@ -101,23 +102,26 @@ class Cumpleaños(commands.Cog):
         self.verify_day.restart()
         pass
 
+    # FIXME Usar un paginador
     @commands.group(aliases=['bd'])
     async def birthday(self, ctx):
         if ctx.invoked_subcommand is None:
             if ctx.guild is None:
                 user_id = ctx.author.id
                 user_data = self.bot.database.get_user_data(user_id, 'birthday_date')
-                user_birthday = user_data[0][0].strftime("%d del mes %m")
-                await ctx.send(f"Tu cumple es el {user_birthday}")
+                if len(user_data) != 0:
+                    user_birthday = user_data[0][0].strftime("%d del mes %m")
+                    await ctx.send(f"Tu cumple es el {user_birthday}")
             else:
                 string = "\n ```ini\n°·.¸.·°¯°·.¸.·°¯°·.¸.->   🎀  𝐹𝑒𝒸𝒽𝒶𝓈  🎀   >-.¸.·°¯°·.¸.·°¯°·.¸.·°\n"
-                pages = commands.Paginator()
-                for users in data:
-                    user_id = data[users]
-                    user_name = user_id['name']
-                    user_bday = f"{user_id['day']}/{user_id['month']}/{user_id['year']}"
-                    text = f"[{user_name}]: {user_bday}"
-                    string = string + f"\n{text}"
+                users = self.bot.database.select_two_from('name', 'birthday_date', 'birthdays')
+                log.info(users)
+                if len(users) != 0:
+                    for user_data in users:
+                        user_name = user_data[0]
+                        log.info(user_name)
+                        user_birthday = user_data[1].strftime("%d/%m")
+                        string = string + f"\n[{user_name}]:\t\t  {user_birthday}"
                 string = string + "``` Para mas informacion, usa `c.help birthday` y si quieres añadir tu cumpleaños usa `c.birthday add [tu fecha de cumpleaños]`"
                 await ctx.send(string)
 
