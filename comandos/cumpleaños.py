@@ -8,13 +8,9 @@ import discord
 
 log = logging.getLogger('awoobot')
 
-def read_json(file):
-    with open(file, 'r') as json_file:
-        return json.load(json_file)
-
 def is_configurated():
     async def predicate(ctx):
-        data = read_json('./comandos/config.json')
+        data = ""
         if ctx.guild is None:
             return True
         if str(ctx.guild.id) in data:
@@ -127,23 +123,32 @@ class Cumpleaños(commands.Cog):
 
     
     @birthday.command()
-    @is_configurated()
     async def add(self, ctx, day: int, month: int, year: int):
         user_id = ctx.author.id
         user_name = ctx.author.name
         user_guild_id = ctx.guild.id
-        user_date = f"{day} {month} {year}"
-        db_user_data = self.bot.database.get_user_data(user_id)
-        
-        if len(db_user_data) != 0:
-            await ctx.send(self.msg_duplicated)
 
-        elif await self.is_valid_date(user_date):
-            self.bot.database.insert_birthday(user_id, user_name, user_guild_id, f"{day}-{month}-{year}")
-            await ctx.send(self.msg_sucess)
+        verify = self.bot.database.send(f"SELECT * FROM server_configuration WHERE guild_id = '{user_guild_id}'")
+        if len(verify) != 0:
+            user_date = f"{day} {month} {year}"
+            db_user_data = self.bot.database.get_user_data(user_id)
+            
+            if len(db_user_data) != 0:
+                await ctx.send(self.msg_duplicated)
 
+            elif await self.is_valid_date(user_date):
+                self.bot.database.insert_birthday(user_id, user_name, user_guild_id, f"{day}-{month}-{year}")
+                await ctx.send(self.msg_sucess)
+
+            else:
+                await ctx.send(self.msg_badformat, delete_after=10)
         else:
-            await ctx.send(self.msg_badformat, delete_after=10)
+            string = """> **Error**
+            Aun no se han configurado las opciones de cumpleaños.
+            Usa `c.config <canal> <mensaje>` para configurarlo
+            O usa `c.help config` para mas información"""
+
+            await ctx.send(string)
 
     @add.error
     async def add_error(self, ctx, error):
